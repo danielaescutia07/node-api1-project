@@ -3,6 +3,8 @@ const express = require('express');
 const User = require('./users/model');
 const server = express();
 
+server.use(express.json());
+
 server.get('/api/users', async (req, res) => {
   try {
     const users = await User.find()
@@ -29,6 +31,25 @@ server.get('/api/users/:id', async (req, res) => {
   } catch (err) {
     res.status(500).json({
       message: `user with id ${id} not found`,
+      error: err.message
+    })
+  }
+});
+
+server.post('/api/users', async (req, res) => {
+  const { body } = req;
+  try {
+    const newUser = await User.insert(body);
+    if (!newUser.name || !newUser.bio) {
+      res.status(400).json({
+        message: 'Please provide name and bio for the user'
+      })
+    } else {
+      res.status(201).json(newUser);
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: 'There was an error while saving the user to the database',
       error: err.message
     })
   }
