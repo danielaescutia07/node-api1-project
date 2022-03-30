@@ -55,6 +55,49 @@ server.post('/api/users', async (req, res) => {
   }
 });
 
+server.put('/api/users/:id', async (req, res) => {
+  const { id } = req.param;
+  const { body } = req;
+  try {
+    const updatedUser = await User.update(id, body);
+    if (!updatedUser) {
+      res.status(404).json({
+        message: 'The user with the specified ID does not exist'
+      })
+    } else if (!updatedUser.name || !updatedUser.bio) {
+      res.status(400).json({
+        message: 'Please provide name and bio for the user'
+      })
+    } else {
+      res.json(updatedUser);
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: 'The user information could not be modified',
+      error: err.message
+    })
+  }
+});
+
+server.delete('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deletedUser = await User.remove(id);
+    if (!deletedUser) {
+      res.status(404).json({
+        message: 'The user with the specified ID does not exist'
+      })
+    } else {
+      res.json(deletedUser);
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: 'The user could not be removed',
+      error: err.message
+    })
+  }
+});
+
 server.use('*', (req, res) => {
   res.status(404).json({
     message: 'not found'
