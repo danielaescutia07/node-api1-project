@@ -56,20 +56,23 @@ server.post('/api/users', async (req, res) => {
 });
 
 server.put('/api/users/:id', async (req, res) => {
-  const { id } = req.param;
+  const { id } = req.params;
   const { body } = req;
   try {
-    const updatedUser = await User.update(id, body);
-    if (!updatedUser) {
+    const possibleUser = await User.findById(id);
+    if (!possibleUser) {
       res.status(404).json({
         message: 'The user with the specified ID does not exist'
       })
-    } else if (!updatedUser.name || !updatedUser.bio) {
-      res.status(400).json({
-        message: 'Please provide name and bio for the user'
-      })
     } else {
-      res.json(updatedUser);
+      if (!body.name || !body.bio) {
+        res.status(400).json({
+          message: 'Please provide name and bio for the user'
+        })
+      } else {
+        const updatedUser = await User.update(id,body);
+        res.status(200).json(updatedUser);
+      }
     }
   } catch (err) {
     res.status(500).json({
